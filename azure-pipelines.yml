@@ -1,41 +1,44 @@
 pool:
     vmImage: 'windows-latest'
-steps:
-  - task: UseDotNet@2
-    displayName: 'Use .NET SDK'
-    inputs:
-      packageType: 'sdk'
-      version: 10.0.101
-  - task: DotNetCoreCLI@2
-    displayName: 'Pack Templates'
-    inputs:
-      packagesToPack: 'Avalonia.Templates.csproj'
-      command: pack
-      outputDir: '$(Build.ArtifactStagingDirectory)/NuGet'
-      verbosityPack: normal
-  - task: CmdLine@2
-    displayName: 'Install templates'
-    inputs:
-      script: 'dotnet new install $(Build.ArtifactStagingDirectory)/NuGet/*.nupkg' 
-  - task: CmdLine@2
-    displayName: 'Install workload'
-    inputs:
-      script: 'dotnet workload install android ios wasm-tools --version 10.0.101' 
-  - task: PowerShell@2
-    displayName: 'Run Tests'
-    inputs:
-      filePath: 'tests/build-test.ps1'
-      failOnStdError: true
-      workingDirectory: 'tests'
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Build Artifacts'
-    inputs:
-      pathtoPublish: '$(Build.ArtifactStagingDirectory)/NuGet'
-      artifactName: 'NuGet'
-    condition: succeeded()
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Test Binlog Artifacts'
-    inputs:
-      pathtoPublish: 'binlog/test.binlog'
-      artifactName: 'TestBinlog'
-    condition: failed()
+jobs:
+  - job: 'Build Templates'
+    timeoutInMinutes: 120
+    steps:
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK'
+        inputs:
+          packageType: 'sdk'
+          version: 10.0.101
+      - task: DotNetCoreCLI@2
+        displayName: 'Pack Templates'
+        inputs:
+          packagesToPack: 'Avalonia.Templates.csproj'
+          command: pack
+          outputDir: '$(Build.ArtifactStagingDirectory)/NuGet'
+          verbosityPack: normal
+      - task: CmdLine@2
+        displayName: 'Install templates'
+        inputs:
+          script: 'dotnet new install $(Build.ArtifactStagingDirectory)/NuGet/*.nupkg' 
+      - task: CmdLine@2
+        displayName: 'Install workload'
+        inputs:
+          script: 'dotnet workload install android ios wasm-tools --version 10.0.101' 
+      - task: PowerShell@2
+        displayName: 'Run Tests'
+        inputs:
+          filePath: 'tests/build-test.ps1'
+          failOnStdError: true
+          workingDirectory: 'tests'
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Build Artifacts'
+        inputs:
+          pathtoPublish: '$(Build.ArtifactStagingDirectory)/NuGet'
+          artifactName: 'NuGet'
+        condition: succeeded()
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Test Binlog Artifacts'
+        inputs:
+          pathtoPublish: 'binlog/test.binlog'
+          artifactName: 'TestBinlog'
+        condition: failed()
