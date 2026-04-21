@@ -7,7 +7,7 @@
       "name": {
         "text": "Avalonia Version"
       },
-      "isVisible": false
+      "isVisible": true
     },
     {
       "id": "MVVMToolkit",
